@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	_ "gengaozo/app/commands"
+	"gengaozo/app/handlers"
 	"log"
 	"os"
 	"os/signal"
@@ -24,16 +26,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	sess.AddHandler(func(s *discordgo.Session, m *discordgo.MessageCreate) {
-		if m.Author.ID == s.State.User.ID {
-			return
-		}
-
-		if m.Content == "hello" {
-			s.ChannelMessageSend(m.ChannelID, "world")
-		}
-	})
-
 	sess.Identify.Intents = discordgo.IntentsAllWithoutPrivileged
 
 	err = sess.Open()
@@ -41,6 +33,8 @@ func main() {
 		log.Fatal(err)
 	}
 	defer sess.Close()
+
+	sess.AddHandler(handlers.CommandHandler)
 
 	fmt.Println("Logged as " + sess.State.User.Username)
 
