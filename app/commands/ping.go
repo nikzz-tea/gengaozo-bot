@@ -2,12 +2,17 @@ package commands
 
 import (
 	"gengaozo/app/handlers"
-
-	"github.com/bwmarrin/discordgo"
+	"gengaozo/app/models"
+	"strings"
 )
 
 func init() {
-	handlers.RegisterCommand("ping", func(s *discordgo.Session, m *discordgo.MessageCreate) {
-		s.ChannelMessageSend(m.ChannelID, "pong "+m.Author.Username)
+	handlers.RegisterCommand(models.CommandObject{
+		Aliases: []string{"ping", "p"},
+		Callback: func(props models.CommandProps) {
+			sess, message, args := props.Sess, props.Message, props.Args
+
+			sess.ChannelMessageSend(message.ChannelID, "pong "+strings.Join(args, " "))
+		},
 	})
 }

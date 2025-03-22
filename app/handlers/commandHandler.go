@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"gengaozo/app/models"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
@@ -8,7 +9,7 @@ import (
 
 const prefix = "!"
 
-var commands = make(map[string]func(s *discordgo.Session, m *discordgo.MessageCreate))
+var commands = make(map[string]func(models.CommandProps))
 
 func CommandHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Author.ID == s.State.User.ID {
@@ -18,13 +19,22 @@ func CommandHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	commandName := strings.Fields(m.Content[len(prefix):])[0]
-
-	if callback, exists := commands[commandName]; exists {
-		callback(s, m)
+	args := strings.Split(m.Content[len(prefix):], " ")
+	commandName := strings.ToLower(args[0])
+	callback, exists := commands[commandName]
+	if !exists {
+		return
 	}
+
+	callback(models.CommandProps{
+		Args:    args[1:],
+		Sess:    s,
+		Message: m,
+	})
 }
 
-func RegisterCommand(name string, command func(s *discordgo.Session, m *discordgo.MessageCreate)) {
-	commands[name] = command
+func RegisterCommand(command models.CommandObject) {
+	for _, alias := range command.Aliases {
+		commands[alias] = command.Callback
+	}
 }
