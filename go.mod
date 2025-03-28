@@ -20,7 +20,8 @@ require (
 	golang.org/x/crypto v0.23.0 // indirect
 	golang.org/x/net v0.25.0 // indirect
 	golang.org/x/sys v0.20.0 // indirect
-	gorm.io/gorm v1.25.7 // indirect
+	golang.org/x/text v0.15.0 // indirect
+	gorm.io/gorm v1.25.12 // indirect
 	modernc.org/libc v1.22.5 // indirect
 	modernc.org/mathutil v1.5.0 // indirect
 	modernc.org/memory v1.5.0 // indirect
