@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	_ "gengaozo/app/commands"
+	"gengaozo/app/database"
 	"gengaozo/app/handlers"
 	"log"
 	"os"
@@ -35,6 +36,8 @@ func main() {
 	defer sess.Close()
 
 	sess.AddHandler(handlers.CommandHandler)
+
+	database.Init()
 
 	fmt.Println("Logged as " + sess.State.User.Username)
 
