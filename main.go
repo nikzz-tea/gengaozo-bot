@@ -37,6 +37,7 @@ func main() {
 	defer sess.Close()
 
 	sess.AddHandler(handlers.CommandHandler)
+	handlers.EventHandler(sess)
 
 	osuClientId := os.Getenv("OSU_APP_ID")
 	osuClientSecret := os.Getenv("OSU_SECRET")
