@@ -7,12 +7,15 @@ import (
 	"gorm.io/gorm"
 )
 
+var DB *gorm.DB
+
 func Init() {
-	var db, err = gorm.Open(sqlite.Open("db.sqlite"), &gorm.Config{})
+	var err error
+	DB, err = gorm.Open(sqlite.Open("db.sqlite"), &gorm.Config{})
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	db.AutoMigrate(&User{}, &Map{})
+	DB.AutoMigrate(&User{}, &Map{})
 }
