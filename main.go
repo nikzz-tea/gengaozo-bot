@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"gengaozo/app/api/osu"
 	_ "gengaozo/app/commands"
 	"gengaozo/app/database"
 	"gengaozo/app/handlers"
@@ -36,6 +37,13 @@ func main() {
 	defer sess.Close()
 
 	sess.AddHandler(handlers.CommandHandler)
+
+	osuClientId := os.Getenv("OSU_APP_ID")
+	osuClientSecret := os.Getenv("OSU_SECRET")
+	err = osu.Auth(osuClientId, osuClientSecret)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	database.Init()
 
