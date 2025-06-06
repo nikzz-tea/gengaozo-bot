@@ -2,17 +2,13 @@ package osu
 
 import (
 	"encoding/json"
+	"gengaozo/app/models"
 	"io"
 	"log"
 	"net/http"
 )
 
-type user struct {
-	Id       int    `json:"id"`
-	Username string `json:"username"`
-}
-
-func GetUser(id string) (user, error) {
+func GetUser(id string) (models.User, error) {
 	token, err := getToken()
 	if err != nil {
 		log.Fatal(err)
@@ -29,7 +25,7 @@ func GetUser(id string) (user, error) {
 
 	body, _ := io.ReadAll(resp.Body)
 
-	var userData user
+	var userData models.User
 
 	if err := json.Unmarshal(body, &userData); err != nil {
 		return userData, err
