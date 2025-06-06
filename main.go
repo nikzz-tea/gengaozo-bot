@@ -5,6 +5,7 @@ import (
 	"gengaozo/app/api/osu"
 	_ "gengaozo/app/commands"
 	"gengaozo/app/database"
+	_ "gengaozo/app/events"
 	"gengaozo/app/handlers"
 	"log"
 	"os"
