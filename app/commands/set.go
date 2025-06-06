@@ -32,7 +32,7 @@ func init() {
 				return
 			}
 
-			database.DB.Save(database.User{
+			database.DB.Save(&database.User{
 				Discord_id: message.Author.ID,
 				Osu_id:     strconv.Itoa(user.Id),
 			})
