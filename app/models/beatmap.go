@@ -14,5 +14,5 @@ type Beatmapset struct {
 }
 
 type Covers struct {
-	List string `json:"string"`
+	List string `json:"list"`
 }
