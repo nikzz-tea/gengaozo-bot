@@ -8,6 +8,7 @@ require (
 	github.com/bwmarrin/discordgo v0.28.1
 	github.com/glebarez/sqlite v1.11.0
 	github.com/joho/godotenv v1.5.1
+	golang.org/x/text v0.26.0
 	gorm.io/gorm v1.25.12
 )
 
@@ -23,7 +24,6 @@ require (
 	golang.org/x/crypto v0.23.0 // indirect
 	golang.org/x/net v0.25.0 // indirect
 	golang.org/x/sys v0.20.0 // indirect
-	golang.org/x/text v0.26.0 // indirect
 	modernc.org/libc v1.22.5 // indirect
 	modernc.org/mathutil v1.5.0 // indirect
 	modernc.org/memory v1.5.0 // indirect
