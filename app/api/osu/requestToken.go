@@ -3,6 +3,7 @@ package osu
 import (
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"time"
@@ -43,6 +44,8 @@ func requestToken(clientId string, clientSecret string, tokenData *TokenData) er
 		clientId:     clientId,
 		clientSecret: clientSecret,
 	}
+
+	log.Println("osu! token updated")
 
 	return nil
 }

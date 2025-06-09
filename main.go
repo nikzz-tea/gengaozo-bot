@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"gengaozo/app/api/osu"
 	_ "gengaozo/app/commands"
 	"gengaozo/app/database"
@@ -49,7 +48,7 @@ func main() {
 
 	database.Init()
 
-	fmt.Println("Logged as " + sess.State.User.Username + "#" + sess.State.User.Discriminator)
+	log.Println("Logged as " + sess.State.User.Username + "#" + sess.State.User.Discriminator)
 
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
