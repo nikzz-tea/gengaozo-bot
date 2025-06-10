@@ -23,7 +23,7 @@ func init() {
 
 			user, err := osu.GetUser(strings.Join(args, " "))
 			if err != nil {
-				log.Fatal(err)
+				log.Println(err)
 				return
 			}
 

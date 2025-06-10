@@ -4,14 +4,15 @@ import (
 	"encoding/json"
 	"gengaozo/app/models"
 	"io"
-	"log"
 	"net/http"
 )
 
 func GetBeatmapScore(userID string, beatmapID string) (models.BeatmapScore, error) {
+	var scoreData models.BeatmapScore
+
 	token, err := getToken()
 	if err != nil {
-		log.Fatal(err)
+		return scoreData, err
 	}
 
 	req, _ := http.NewRequest("GET", baseURL+"/beatmaps/"+beatmapID+"/scores/users/"+userID, nil)
@@ -19,13 +20,11 @@ func GetBeatmapScore(userID string, beatmapID string) (models.BeatmapScore, erro
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		return scoreData, err
 	}
 	defer resp.Body.Close()
 
 	body, _ := io.ReadAll(resp.Body)
-
-	var scoreData models.BeatmapScore
 
 	if err := json.Unmarshal(body, &scoreData); err != nil {
 		return scoreData, err
