@@ -1,0 +1,7 @@
+services:
+  gengaozo:
+    build: .
+    container_name: gengaozo
+    volumes:
+      - ./db.sqlite:/app/db.sqlite
+      - ./.env:/app/.env
