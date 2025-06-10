@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"gengaozo/app/models"
+	"log"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
@@ -31,6 +32,8 @@ func CommandHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		Sess:    s,
 		Message: m,
 	})
+
+	log.Printf("'%v' used '%v' command\n", m.Author.Username, commandName)
 }
 
 func RegisterCommand(command models.CommandObject) {
