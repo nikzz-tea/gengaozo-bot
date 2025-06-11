@@ -13,10 +13,13 @@ const prefix = "!"
 var commands = make(map[string]func(models.CommandProps))
 
 func CommandHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
-	if m.Author.ID == s.State.User.ID {
+	if m.Author == nil {
 		return
 	}
 	if !strings.HasPrefix(m.Content, prefix) {
+		return
+	}
+	if m.Author.ID == s.State.User.ID {
 		return
 	}
 
