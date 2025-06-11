@@ -30,13 +30,13 @@ func CommandHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
+	log.Printf("'%v' used '%v' command\n", m.Author.Username, commandName)
+
 	callback(models.CommandProps{
 		Args:    args[1:],
 		Sess:    s,
 		Message: m,
 	})
-
-	log.Printf("'%v' used '%v' command\n", m.Author.Username, commandName)
 }
 
 func RegisterCommand(command models.CommandObject) {
