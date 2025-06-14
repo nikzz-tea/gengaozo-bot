@@ -11,6 +11,7 @@ import (
 const prefix = "!"
 
 var commands = make(map[string]func(models.CommandProps))
+var aliases = make(map[string]string)
 
 func CommandHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Author == nil {
@@ -25,6 +26,10 @@ func CommandHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	args := strings.Split(m.Content[len(prefix):], " ")
 	commandName := strings.ToLower(args[0])
+
+	if _, exists := aliases[commandName]; exists {
+		commandName = aliases[commandName]
+	}
 	callback, exists := commands[commandName]
 	if !exists {
 		return
@@ -40,7 +45,11 @@ func CommandHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 }
 
 func RegisterCommand(command models.CommandObject) {
-	for _, alias := range command.Aliases {
-		commands[alias] = command.Callback
+	commands[command.Name] = command.Callback
+
+	if command.Aliases != nil {
+		for _, alias := range command.Aliases {
+			aliases[alias] = command.Name
+		}
 	}
 }

@@ -13,7 +13,7 @@ import (
 
 func init() {
 	handlers.RegisterCommand(models.CommandObject{
-		Aliases: []string{"set"},
+		Name: "set",
 		Callback: func(props models.CommandProps) {
 			sess, message, args := props.Sess, props.Message, props.Args
 			if len(args) == 0 {

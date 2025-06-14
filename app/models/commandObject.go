@@ -3,6 +3,7 @@ package models
 import "github.com/bwmarrin/discordgo"
 
 type CommandObject struct {
+	Name     string
 	Aliases  []string
 	Callback func(CommandProps)
 }

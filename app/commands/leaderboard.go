@@ -27,7 +27,8 @@ var cleanupDelay = 30 * time.Second
 
 func init() {
 	handlers.RegisterCommand(models.CommandObject{
-		Aliases: []string{"leaderboard", "lb"},
+		Name:    "leaderboard",
+		Aliases: []string{"lb"},
 		Callback: func(props models.CommandProps) {
 			sess, message, args := props.Sess, props.Message, props.Args
 
