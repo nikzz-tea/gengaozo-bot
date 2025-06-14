@@ -32,6 +32,8 @@ func init() {
 		Callback: func(props models.CommandProps) {
 			sess, message, args := props.Sess, props.Message, props.Args
 
+			sess.ChannelTyping(message.ChannelID)
+
 			beatmapID := getBeatmapID(sess, message, args)
 
 			if beatmapID == "" {
