@@ -8,7 +8,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-const prefix = "!"
+const prefix = ";"
 
 var commands = make(map[string]func(models.CommandProps))
 var aliases = make(map[string]string)
