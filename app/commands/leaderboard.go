@@ -82,12 +82,7 @@ func init() {
 				select {
 				case userScores := <-results:
 					if len(userScores.Scores) > 0 {
-						sort.Slice(userScores.Scores, func(i, j int) bool {
-							if userScores.Scores[i].PP == 0 {
-								return userScores.Scores[i].Score > userScores.Scores[j].Score
-							}
-							return userScores.Scores[i].PP > userScores.Scores[j].PP
-						})
+						sortScores(userScores.Scores)
 						scores = append(scores, userScores.Scores[0])
 					}
 				case err := <-errors:
@@ -100,12 +95,7 @@ func init() {
 				return
 			}
 
-			sort.Slice(scores, func(i, j int) bool {
-				if scores[i].PP == 0 {
-					return scores[i].Score > scores[j].Score
-				}
-				return scores[i].PP > scores[j].PP
-			})
+			sortScores(scores)
 
 			scoresPerPage := 5
 			totalPages := (len(scores) + scoresPerPage - 1) / scoresPerPage
@@ -252,6 +242,15 @@ func getBeatmapID(s *discordgo.Session, m *discordgo.MessageCreate, args []strin
 	}
 
 	return beatmapID
+}
+
+func sortScores(scores []models.Score) {
+	sort.Slice(scores, func(i, j int) bool {
+		if scores[i].PP == 0 {
+			return scores[i].Score > scores[j].Score
+		}
+		return scores[i].PP > scores[j].PP
+	})
 }
 
 func cleanupPagination(s *discordgo.Session, messageID, channelID string) {
