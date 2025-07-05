@@ -1,8 +1,9 @@
 package database
 
 type User struct {
-	Discord_id string `gorm:"primaryKey"`
-	Osu_id     string
+	Discord_id   string `gorm:"primaryKey"`
+	Osu_id       string
+	Osu_username string
 }
 
 type Map struct {

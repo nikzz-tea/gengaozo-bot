@@ -33,8 +33,9 @@ func init() {
 			}
 
 			database.DB.Save(&database.User{
-				Discord_id: message.Author.ID,
-				Osu_id:     strconv.Itoa(user.Id),
+				Discord_id:   message.Author.ID,
+				Osu_id:       strconv.Itoa(user.Id),
+				Osu_username: user.Username,
 			})
 
 			sess.ChannelMessageSend(message.ChannelID, fmt.Sprintf("`%v`'s osu! username is set to `%v`", message.Message.Author.Username, user.Username))
