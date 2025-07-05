@@ -9,7 +9,6 @@ import (
 	"gengaozo/app/utils"
 	"log"
 	"math"
-	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -56,30 +55,40 @@ func init() {
 			for _, member := range members {
 				memberIDs = append(memberIDs, member.User.ID)
 			}
-			var ids []string
+			var osuUsers []database.User
 			database.DB.Model(&database.User{}).
+				Select("osu_id", "osu_username").
 				Where("discord_id IN ?", memberIDs).
-				Pluck("osu_id", &ids)
+				Find(&osuUsers)
 
-			results := make(chan models.BeatmapScore, len(ids))
-			errors := make(chan error, len(ids))
-			for _, id := range ids {
-				go func(userID string) {
-					score, err := osu.GetBeatmapScore(userID, beatmapID)
+			results := make(chan models.BeatmapScores, len(osuUsers))
+			errors := make(chan error, len(osuUsers))
+			for _, user := range osuUsers {
+				go func(user database.User) {
+					scores, err := osu.GetBeatmapScores(user.Osu_id, beatmapID)
 					if err != nil {
 						errors <- err
 						return
 					}
-					results <- score
-				}(id)
+					for i := range scores.Scores {
+						scores.Scores[i].User = user
+					}
+					results <- scores
+				}(user)
 			}
 
-			var scores []models.BeatmapScore
-			for range ids {
+			var scores []models.Score
+			for range osuUsers {
 				select {
-				case score := <-results:
-					if score.Score != nil {
-						scores = append(scores, score)
+				case userScores := <-results:
+					if len(userScores.Scores) > 0 {
+						sort.Slice(userScores.Scores, func(i, j int) bool {
+							if userScores.Scores[i].PP == 0 {
+								return userScores.Scores[i].Score > userScores.Scores[j].Score
+							}
+							return userScores.Scores[i].PP > userScores.Scores[j].PP
+						})
+						scores = append(scores, userScores.Scores[0])
 					}
 				case err := <-errors:
 					log.Println(err)
@@ -92,10 +101,10 @@ func init() {
 			}
 
 			sort.Slice(scores, func(i, j int) bool {
-				if scores[i].Score.PP == 0 {
-					return scores[i].Score.Score > scores[j].Score.Score
+				if scores[i].PP == 0 {
+					return scores[i].Score > scores[j].Score
 				}
-				return scores[i].Score.PP > scores[j].Score.PP
+				return scores[i].PP > scores[j].PP
 			})
 
 			scoresPerPage := 5
@@ -119,27 +128,27 @@ func init() {
 					Fields:    []*discordgo.MessageEmbedField{},
 				}
 
-				for _, score := range pageScores {
+				for j, score := range pageScores {
 					mods := "NM"
-					if len(score.Score.Mods) > 0 {
-						mods = strings.Join(score.Score.Mods, "")
+					if len(score.Mods) > 0 {
+						mods = strings.Join(score.Mods, "")
 					}
-					pp := math.Round(score.Score.PP)
-					accuracy := fmt.Sprintf("%.2f", score.Score.Accuracy*100)
-					date, _ := time.Parse(time.RFC3339, score.Score.Date)
+					pp := math.Round(score.PP)
+					accuracy := fmt.Sprintf("%.2f", score.Accuracy*100)
+					date, _ := time.Parse(time.RFC3339, score.Date)
 					timestamp := fmt.Sprintf("<t:%v:R>", date.Unix())
 					locale := m.NewPrinter(language.English)
-					formattedScore := locale.Sprintf("%d", score.Score.Score)
+					formattedScore := locale.Sprintf("%d", score.Score)
 
 					name := fmt.Sprintf(
 						"**#%v** %v `%vpp` +%v",
-						slices.Index(scores, score)+1, score.Score.User.Username, pp, mods,
+						scoresPerPage*len(pages)+j+1, score.User.Osu_username, pp, mods,
 					)
 					value := fmt.Sprintf(
 						"%v (%v%%) • %v • **x%v/%v** • [%v/%v/%v/%v]\nScore set %v",
-						utils.GetRankEmote(score.Score.Rank), accuracy, formattedScore, score.Score.MaxCombo,
-						beatmap.MaxCombo, score.Score.Hits.Count300, score.Score.Hits.Count100,
-						score.Score.Hits.Count50, score.Score.Hits.CountMiss, timestamp,
+						utils.GetRankEmote(score.Rank), accuracy, formattedScore, score.MaxCombo,
+						beatmap.MaxCombo, score.Hits.Count300, score.Hits.Count100,
+						score.Hits.Count50, score.Hits.CountMiss, timestamp,
 					)
 
 					embed.Fields = append(embed.Fields, &discordgo.MessageEmbedField{Name: name, Value: value})
