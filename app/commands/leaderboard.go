@@ -33,7 +33,7 @@ func init() {
 
 			sess.ChannelTyping(message.ChannelID)
 
-			beatmapID := getBeatmapID(sess, message, args)
+			beatmapID, mods := handleArguments(sess, message, args)
 
 			if beatmapID == "" {
 				sess.ChannelMessageSend(message.ChannelID, "🔴 **Provide a beatmap id**")
@@ -82,8 +82,11 @@ func init() {
 				select {
 				case userScores := <-results:
 					if len(userScores.Scores) > 0 {
-						sortScores(userScores.Scores)
-						scores = append(scores, userScores.Scores[0])
+						filteredScores := filterByMods(userScores.Scores, mods)
+						if len(filteredScores) > 0 {
+							sortScores(filteredScores)
+							scores = append(scores, filteredScores[0])
+						}
 					}
 				case err := <-errors:
 					log.Println(err)
@@ -209,39 +212,41 @@ func init() {
 	})
 }
 
-func getBeatmapID(s *discordgo.Session, m *discordgo.MessageCreate, args []string) string {
+func handleArguments(s *discordgo.Session, m *discordgo.MessageCreate, args []string) (string, []string) {
 	var beatmapID string
+	var mods []string
 
-	if len(args) > 0 {
-		if parsed := utils.ParseBeatmapID(args[0]); parsed != "" {
+	for _, arg := range args {
+		if strings.HasPrefix(arg, "+") {
+			raw := strings.TrimPrefix(arg, "+")
+			if len(raw)%2 != 0 {
+				continue
+			}
+			for i := 0; i < len(raw); i += 2 {
+				mods = append(mods, strings.ToUpper(raw[i:i+2]))
+			}
+		} else if parsed := utils.ParseBeatmapID(arg); parsed != "" {
 			beatmapID = parsed
-		} else if _, err := strconv.Atoi(args[0]); err == nil {
-			beatmapID = args[0]
+		} else if _, err := strconv.Atoi(arg); err == nil {
+			beatmapID = arg
 		}
 	}
-	if beatmapID != "" {
-		return beatmapID
-	}
 
-	if m.MessageReference != nil {
+	if beatmapID == "" && m.MessageReference != nil {
 		replied, err := s.ChannelMessage(m.MessageReference.ChannelID, m.MessageReference.MessageID)
 		if err == nil && len(replied.Embeds) > 0 {
 			beatmapID = utils.ParseEmbed(replied.Embeds[0])
 		}
 	}
-	if beatmapID != "" {
-		return beatmapID
+
+	if beatmapID == "" {
+		database.DB.Model(&database.Map{}).
+			Select("map_id").
+			Where("channel_id = ?", m.ChannelID).
+			Take(&beatmapID)
 	}
 
-	database.DB.Model(&database.Map{}).
-		Select("map_id").
-		Where("channel_id = ?", m.ChannelID).
-		Take(&beatmapID)
-	if beatmapID != "" {
-		return beatmapID
-	}
-
-	return beatmapID
+	return beatmapID, mods
 }
 
 func sortScores(scores []models.Score) {
@@ -251,6 +256,38 @@ func sortScores(scores []models.Score) {
 		}
 		return scores[i].PP > scores[j].PP
 	})
+}
+
+func filterByMods(scores []models.Score, mods []string) []models.Score {
+	if len(mods) == 0 {
+		return scores
+	}
+
+	var filteredScores []models.Score
+
+	for _, score := range scores {
+		if len(score.Mods) == 0 {
+			score.Mods = append(score.Mods, "NM")
+		}
+		match := true
+		modsMap := make(map[string]bool)
+		for _, mod := range score.Mods {
+			mod := strings.Replace(mod, "NC", "DT", 1)
+			modsMap[mod] = true
+		}
+		for _, mod := range mods {
+			mod := strings.Replace(mod, "NC", "DT", 1)
+			if !modsMap[mod] {
+				match = false
+				break
+			}
+		}
+		if match {
+			filteredScores = append(filteredScores, score)
+		}
+	}
+
+	return filteredScores
 }
 
 func cleanupPagination(s *discordgo.Session, messageID, channelID string) {
