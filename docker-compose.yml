@@ -2,6 +2,7 @@ services:
   gengaozo:
     build: .
     container_name: gengaozo
+    restart: unless-stopped
     volumes:
       - ./db.sqlite:/app/db.sqlite
       - ./.env:/app/.env
