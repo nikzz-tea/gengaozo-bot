@@ -6,7 +6,6 @@ import (
 	"gengaozo/app/database"
 	"gengaozo/app/handlers"
 	"gengaozo/app/models"
-	"gengaozo/app/store"
 	"gengaozo/app/utils"
 	"log"
 	"math"
@@ -152,18 +151,7 @@ func init() {
 			})
 
 			if totalPages > 1 {
-				timer := time.AfterFunc(store.CleanupDelay, func() {
-					store.CleanupPagination(sess, msg.ID, msg.ChannelID)
-				})
-
-				store.PaginationMutex.Lock()
-				store.Paginations[msg.ID] = &models.PaginationData{
-					Pages:       pages,
-					CurrentPage: 0,
-					LastUsed:    time.Now(),
-					Timer:       timer,
-				}
-				store.PaginationMutex.Unlock()
+				utils.CreatePagination(sess, pages, msg.ID, msg.ChannelID)
 			}
 		},
 	})
