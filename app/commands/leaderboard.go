@@ -6,23 +6,19 @@ import (
 	"gengaozo/app/database"
 	"gengaozo/app/handlers"
 	"gengaozo/app/models"
+	"gengaozo/app/store"
 	"gengaozo/app/utils"
 	"log"
 	"math"
 	"sort"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"golang.org/x/text/language"
 	m "golang.org/x/text/message"
 )
-
-var paginations = make(map[string]*models.PaginationData)
-var paginationMutex sync.Mutex
-var cleanupDelay = 30 * time.Second
 
 func init() {
 	handlers.RegisterCommand(models.CommandObject{
@@ -156,18 +152,18 @@ func init() {
 			})
 
 			if totalPages > 1 {
-				timer := time.AfterFunc(cleanupDelay, func() {
-					cleanupPagination(sess, msg.ID, msg.ChannelID)
+				timer := time.AfterFunc(store.CleanupDelay, func() {
+					store.CleanupPagination(sess, msg.ID, msg.ChannelID)
 				})
 
-				paginationMutex.Lock()
-				paginations[msg.ID] = &models.PaginationData{
+				store.PaginationMutex.Lock()
+				store.Paginations[msg.ID] = &models.PaginationData{
 					Pages:       pages,
 					CurrentPage: 0,
 					LastUsed:    time.Now(),
 					Timer:       timer,
 				}
-				paginationMutex.Unlock()
+				store.PaginationMutex.Unlock()
 			}
 		},
 	})
@@ -178,15 +174,15 @@ func init() {
 
 		messageID := i.Message.ID
 
-		paginationMutex.Lock()
-		pagination, exists := paginations[messageID]
-		paginationMutex.Unlock()
+		store.PaginationMutex.Lock()
+		pagination, exists := store.Paginations[messageID]
+		store.PaginationMutex.Unlock()
 		if !exists {
 			return
 		}
 
 		pagination.Timer.Stop()
-		pagination.Timer.Reset(cleanupDelay)
+		pagination.Timer.Reset(store.CleanupDelay)
 		pagination.LastUsed = time.Now()
 
 		switch i.MessageComponentData().CustomID {
@@ -288,23 +284,4 @@ func filterByMods(scores []models.Score, mods []string) []models.Score {
 	}
 
 	return filteredScores
-}
-
-func cleanupPagination(s *discordgo.Session, messageID, channelID string) {
-	paginationMutex.Lock()
-	defer paginationMutex.Unlock()
-
-	pagination, exists := paginations[messageID]
-	if !exists {
-		return
-	}
-
-	s.ChannelMessageEditComplex(&discordgo.MessageEdit{
-		Channel:    channelID,
-		ID:         messageID,
-		Embed:      pagination.Pages[pagination.CurrentPage],
-		Components: &[]discordgo.MessageComponent{},
-	})
-
-	delete(paginations, messageID)
 }
