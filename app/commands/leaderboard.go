@@ -101,10 +101,11 @@ func init() {
 
 			for i := 0; i < len(scores); i += scoresPerPage {
 				pageScores := scores[i:min(i+scoresPerPage, len(scores))]
+				starRating := fmt.Sprintf("%.2f", beatmap.StarRating)
 
 				title := fmt.Sprintf(
 					"%v - %v [%v] %v*",
-					beatmap.Beatmapset.Artist, beatmap.Beatmapset.Title, beatmap.Diffname, beatmap.StarRating,
+					beatmap.Beatmapset.Artist, beatmap.Beatmapset.Title, beatmap.Diffname, starRating,
 				)
 				footer := fmt.Sprintf("Page %v/%v", len(pages)+1, totalPages)
 				embed := &discordgo.MessageEmbed{
