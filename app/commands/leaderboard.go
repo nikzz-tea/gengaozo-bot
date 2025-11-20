@@ -104,7 +104,7 @@ func init() {
 				starRating := fmt.Sprintf("%.2f", beatmap.StarRating)
 
 				title := fmt.Sprintf(
-					"%v - %v [%v] %v*",
+					"%v - %v [%v] %v\\*",
 					beatmap.Beatmapset.Artist, beatmap.Beatmapset.Title, beatmap.Diffname, starRating,
 				)
 				footer := fmt.Sprintf("Page %v/%v", len(pages)+1, totalPages)
